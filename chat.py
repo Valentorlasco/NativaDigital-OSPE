@@ -53,3 +53,4 @@ if prompt := st.chat_input("User input"):
 
     if isinstance(last_message, AIMessage) and last_message.content:
         st.chat_message("assistant").markdown(last_message.content)
+
