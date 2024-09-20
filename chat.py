@@ -18,7 +18,13 @@ else:
     agent = Agent(model_type="groq", prompt=prompt)
 
 
-st.title("Agent OSPE")
+st.title("Agente OSPE")
+
+
+
+
+st.write("👋 ¡Hola! Bienvenido al chat de atención de OSPE. ¿En qué puedo ayudarte hoy?")
+
 
 # Initialize chat history
 if "messages" not in st.session_state:
