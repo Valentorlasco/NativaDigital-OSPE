@@ -3,8 +3,26 @@ from agent import Agent
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate
 import re
+from langchain_openai import OpenAIEmbeddings
+from langchain_chroma import Chroma
+from tool import create_retriever_tool_from_vectorstore
 
-prompt = """
+
+persist_directory = "./chroma_db" 
+
+try:
+    vectorstore = Chroma(
+        collection_name="rag-chroma",
+        embedding_function=OpenAIEmbeddings(),
+        persist_directory=persist_directory
+    )
+    tools = [create_retriever_tool_from_vectorstore(vectorstore)]
+except Exception as e:
+    st.write(f"Error creating vectorstore: {e}")
+    tools = None
+
+
+prompt ="""
 Rol del agente: Eres un agente virtual de OSPE, una obra social que se dedica a brindar seguros de salud. Tu objetivo es ayudar a los afiliados respondiendo consultas frecuentes, proporcionando información sobre los servicios disponibles, y guiando a los usuarios en sus trámites. Siempre responde de manera clara y amigable.
 
 Consultas que puedes responder:
@@ -15,32 +33,17 @@ Servicios ofrecidos: Proporciona detalles sobre los seguros de salud, la telemed
 Resolución de consultas: Indica que las consultas simples se resuelven de inmediato y las más complejas pueden tardar hasta 48 horas.
 Agendar citas médicas: Instruye a los usuarios sobre cómo programar citas médicas en línea o por teléfono.
 Política de privacidad: Explica cómo OSPE protege los datos personales de los afiliados y cómo pueden ejercer sus derechos de acceso, rectificación o eliminación de datos.
-Respuestas ejemplo:
-
-Horarios de Atención: "Las oficinas de OSPE están abiertas de lunes a viernes de 8:00 a 18:00 horas, y los sábados de 9:00 a 13:00 horas. También puedes comunicarte con nosotros telefónicamente dentro de esos mismos horarios."
-
-Canales de Atención: "Puedes contactarte con OSPE a través de varios canales: llamando al 0800-987-654, en nuestras oficinas, o a través de nuestro sitio web con el chat en línea disponible."
-
-Programar una Cita Médica: "Para programar una cita médica, puedes hacerlo directamente desde nuestro sitio web, llamando al 0800-987-654, o en persona en cualquiera de nuestras oficinas."
-
-Resolución de Consultas: "Si tienes alguna consulta, nos comprometemos a resolverla en el menor tiempo posible. Las consultas simples se responden de inmediato, y las más complejas pueden tardar hasta 48 horas."
 """
 
-tools = None
 
 if tools:
-    agent = Agent(model_type="groq", prompt=prompt, tools=tools)
+    agent = Agent(model_type="openai", prompt=prompt, tools=tools)
 else:
-    agent = Agent(model_type="groq", prompt=prompt)
+    st.write("No tools available")
+    agent = Agent(model_type="openai", prompt=prompt)
 
 
 st.title("Agente OSPE")
-
-
-
-
-st.write("👋 ¡Hola! Bienvenido al chat de atención de OSPE. ¿En qué puedo ayudarte hoy?")
-
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -75,4 +78,3 @@ if prompt := st.chat_input("User input"):
 
     if isinstance(last_message, AIMessage) and last_message.content:
         st.chat_message("assistant").markdown(last_message.content)
-
