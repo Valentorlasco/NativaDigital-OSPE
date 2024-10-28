@@ -5,7 +5,7 @@ from langchain_core.prompts import ChatPromptTemplate
 import re
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
-from tool import create_retriever_tool_from_vectorstore
+from tool import create_retriever_tool_from_vectorstore, create_get_medico_tool
 
 
 persist_directory = "./chroma_db" 
@@ -16,7 +16,7 @@ try:
         embedding_function=OpenAIEmbeddings(),
         persist_directory=persist_directory
     )
-    tools = [create_retriever_tool_from_vectorstore(vectorstore)]
+    tools = [create_retriever_tool_from_vectorstore(vectorstore), create_get_medico_tool()]
 except Exception as e:
     st.write(f"Error creating vectorstore: {e}")
     tools = None
